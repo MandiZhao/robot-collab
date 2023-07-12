@@ -1,0 +1,35 @@
+<mujocoinclude model="">
+<!-- =================================================
+    Copyright 2019 Vikash Kumar
+    Model   :: Objects (MuJoCoV2.0)
+    Author  :: Vikash Kumar (vikashplus@gmail.com), Sudeep Dasari (sdasari@andrew.cmu.edu )
+    Details :: https://github.com/vikashplus/object_sim
+    License :: Under Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+====================================================== -©vk©-->
+    <asset>
+        <mesh name="fryingpan" file="../object_sim/fryingpan/fryingpan.stl"/>
+        <mesh name="contact0" file="../object_sim/fryingpan/contact0.stl"/>
+        <mesh name="contact1" file="../object_sim/fryingpan/contact1.stl"/>
+        <mesh name="contact2" file="../object_sim/fryingpan/contact2.stl"/>
+        <mesh name="contact3" file="../object_sim/fryingpan/contact3.stl"/>
+        <mesh name="contact4" file="../object_sim/fryingpan/contact4.stl"/>
+        <mesh name="contact5" file="../object_sim/fryingpan/contact5.stl"/>
+        <mesh name="contact6" file="../object_sim/fryingpan/contact6.stl"/>
+        <mesh name="contact7" file="../object_sim/fryingpan/contact7.stl"/>
+        <mesh name="contact8" file="../object_sim/fryingpan/contact8.stl"/>
+        <mesh name="contact9" file="../object_sim/fryingpan/contact9.stl"/>
+        <mesh name="contact10" file="../object_sim/fryingpan/contact10.stl"/>
+        <mesh name="contact11" file="../object_sim/fryingpan/contact11.stl"/>
+        <mesh name="contact12" file="../object_sim/fryingpan/contact12.stl"/>
+        <mesh name="contact13" file="../object_sim/fryingpan/contact13.stl"/>
+        <mesh name="contact14" file="../object_sim/fryingpan/contact14.stl"/>
+        <mesh name="contact15" file="../object_sim/fryingpan/contact15.stl"/>
+        <mesh name="contact16" file="../object_sim/fryingpan/contact16.stl"/>
+        <mesh name="contact17" file="../object_sim/fryingpan/contact17.stl"/>
+        <mesh name="contact18" file="../object_sim/fryingpan/contact18.stl"/>
+        <mesh name="contact19" file="../object_sim/fryingpan/contact19.stl"/>
+        <mesh name="contact20" file="../object_sim/fryingpan/contact20.stl"/>
+        <mesh name="contact21" file="../object_sim/fryingpan/contact21.stl"/>
+        <mesh name="contact22" file="../object_sim/fryingpan/contact22.stl"/>
+    </asset>
+</mujocoinclude>
