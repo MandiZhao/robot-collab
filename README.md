@@ -3,6 +3,8 @@ Codebase for paper: RoCo: Dialectic Multi-Robot Collaboration with Large Languag
 
 [arxiv](https://arxiv.org/abs/2307.04738) | [project website](https://project-roco.github.io) 
 
+<img src="method.jpeg" alt="method" width="800"/>
+
 ## Setup
 ### setup conda env and package install
 ```
