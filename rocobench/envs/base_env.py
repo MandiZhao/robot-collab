@@ -686,14 +686,29 @@ class MujocoSimEnv:
     
     @property
     def use_prepick(self):
+        """
+        If True, hard-code the robot picking trajectory to first hover over an object before picking
+        it in top-down fasion.
+        """
         return False 
     
     @property
     def use_preplace(self):
+        """
+        If True, hard-code the robot placing trajectory to hover over a place target before placing an 
+        object, so the trajectory looks something like below:
+            ^------>
+            |      |
+            pick  place
+        """
         return False 
     
     @property
     def waypoint_std_threshold(self):
+        """
+        Used for providing feedback to LLM-generated waypoints: a waypoint path is not valid
+        unless the steps are evenly paced with variance lower than this threshold.        
+        """
         return 1.0
 
     def get_graspable_objects(self):
@@ -703,22 +718,39 @@ class MujocoSimEnv:
         """ for some tasks, allow certain pairs of graspable objects to collide"""
         return []
 
-    def get_target_pos(self, agent_name, target_name):
+    def get_target_pos(self, agent_name, target_name) -> Optional[np.ndarray]: 
+        """ 
+        Find a target object's 3D position, return None if the object isn't in the task environment
+        """
         return None
     
     def get_target_quat(self, agent_name, target_name):
+        """
+        Returns the desired orientation for an object or site. 
+        Useful for finding a robot's grasping pose.
+        """
         return np.array([1, 0, 0, 0])
 
     def get_grasp_site(self, obj_name) -> str:
-        """ specific tasks might over-write this later, also need it to compute forward IK with the objects in-hand"""
+        """ 
+        Given a target object, find the site name for grasping. Most objects are defined with a 
+        top-down grasp site -- see the task .xml files. Having attached sites to 
+        objects is also needed for forward IK with objects in-hand.
+        """
         return obj_name 
     
     def get_object_joint_name(self, obj_name) -> str:
-        """ specific tasks might over-write this later, also need it to compute forward IK with the objects in-hand"""
+        """ 
+        Find the free joint that defines the location of each object wrt the worldbody.
+        Also needed to compute forward IK with the objects in-hand. 
+        """
         return f"{obj_name}_joint"
 
     def get_reward_done(self, obs): 
-        # task specific!
+        """
+        Determines the success and termination condition, must be defined
+        specifically for each task.
+        """
         return 0, False 
 
     
@@ -739,7 +771,8 @@ class MujocoSimEnv:
         """ Describes the task from the perspective of each given agent """
         raise NotImplementedError
     
-    def get_task_feedback(self, llm_plan, pose_dict):
+    def get_task_feedback(self, llm_plan, pose_dict) -> str:
+        """ Given a plan and a pose dict, checks task-specific conditions and returns feedback string """
         return "" 
 
 

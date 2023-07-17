@@ -1,9 +1,13 @@
 # RoCo: Dialectic Multi-Robot Collaboration with Large Language Models
-Codebase for paper: RoCo: Dialectic Multi-Robot Collaboration with Large Language Models 
+Codebase for paper: RoCo: Dialectic Multi-Robot Collaboration with Large Language Models
 
-[arxiv](https://arxiv.org/abs/2307.04738) | [project website](https://project-roco.github.io) 
+[Mandi Zhao](https://mandizhao.github.io), [Shreeya Jain](https://www.linkedin.com), [Shuran Song](https://www.cs.columbia.edu/~shurans/) 
 
+[Arxiv](https://arxiv.org/abs/2307.04738) | [Project Website](https://project-roco.github.io) 
+
+ 
 <img src="method.jpeg" alt="method" width="800"/>
+
 
 ## Setup
 ### setup conda env and package install

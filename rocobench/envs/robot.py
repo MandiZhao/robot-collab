@@ -4,8 +4,8 @@ from transforms3d import quaternions
 from dm_control.utils.inverse_kinematics import qpos_from_site_pose
 from typing import Callable, List, Optional, Tuple, Union, Dict, Set, Any, FrozenSet
 
-from .env_utils import Pose
-from .base_env import MujocoSimEnv
+from rocobench.envs.env_utils import Pose
+from rocobench.envs.base_env import MujocoSimEnv
 
 class SimRobot:
     """ Stores the info for a single arm, doesn't store or change physics state """

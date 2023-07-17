@@ -2,25 +2,16 @@ import os
 import copy
 import time
 import cv2 
-import numpy as np 
 import random
-from PIL import Image 
-from copy import deepcopy 
-import matplotlib.pyplot as plt
-from collections import deque, defaultdict
+import numpy as np  
+from pydantic import dataclasses, validator 
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
-from numpy.typing import ArrayLike, NDArray
-from pydantic import dataclasses, validator
-import matplotlib.pyplot as plt 
-
 import dm_control 
-from dm_control import mujoco as dm_mujoco
-from dm_control.utils.transformations import mat_to_quat, quat_to_euler, euler_to_quat 
+from dm_control.utils.transformations import mat_to_quat
 from pyquaternion import Quaternion
-
-from .base_env import MujocoSimEnv, EnvState, ObjectState, RobotState, SimAction, SimSaveData
-from .constants import UR5E_ROBOTIQ_CONSTANTS, PANDA_CONSTANTS
-from .robot import SimRobot
+from rocobench.envs.base_env import MujocoSimEnv, EnvState
+from rocobench.envs.robot import SimRobot
+from rocobench.envs.constants import UR5E_ROBOTIQ_CONSTANTS, PANDA_CONSTANTS
 
 PACK_TASK_OBJECTS=[
     "bin",
@@ -74,11 +65,10 @@ PACK_CHAT_PROMPT="""Robots discuss to find the best strategy and path. When each
 Carefully consider [Environment Feedback]. Coordinate with others to plan and improve paths following the instructions. They talk in order [Alice],[Bob],[Alice],..., then, after they agreed, plan exactly one ACTION per robot, output an EXECUTE to summarize the plan and stop talking.
 Their discussion and the final plan: """
 
-PACK_PLAN_PROMPT="""Plan one action for each robot. Analyze the task status, choose the best ACTION for each robot based on its current capability, and plan PATH that efficiently achieves the task and avoids collision:"""
 class PackGroceryTask(MujocoSimEnv):
     def __init__( 
         self,
-        filepath: str = "envs/assets/two_robot_pack.xml",
+        filepath: str = "rocobench/envs/task_pack.xml",
         one_obj_each: bool = False,
         **kwargs,
     ):    
@@ -128,45 +118,13 @@ class PackGroceryTask(MujocoSimEnv):
         )
          
         self.align_threshold = 0.06
-        
-    def get_task_feedback(self, llm_plan, pose_dict): 
-        feedback = ""
-        for agent_name, action_str in llm_plan.action_strs.items():
-            if 'WAIT' in action_str or 'MOVE' in action_str:
-                feedback += f"{agent_name}'s ACTION is invalid, can only PICK or PLACE"
-        return feedback
     
-    def find_emtpy_bin_slot(self, agent_name):
-        if agent_name == 'Alice':
-            bin_slots = {k:v for k,v in self.bin_slot_xposes.items() if 'front' in k}
-        else:
-            bin_slots = {k:v for k,v in self.bin_slot_xposes.items() if 'back' in k}
-
-        slot_name = [k for k in bin_slots.items()][0]
-        farthest_dist = -np.inf 
-        for sname, xpos in bin_slots.items(): 
-            dist_to_obj = [
-                # only compare x,y
-                np.linalg.norm(xpos[:2] - self.physics.data.site(f"{food_name}_bottom").xpos.copy()[:2]) 
-                for food_name in self.item_names
-            ]
-            # print(sname, dist_to_obj) 
-            closest_dist = min(dist_to_obj)
-            if closest_dist > farthest_dist:
-                farthest_dist = closest_dist
-                slot_name = sname
-        # breakpoint()
-        return slot_name
-                    
     def get_target_pos(self, agent_name, target_name) -> Optional[np.ndarray]: 
         ret = None 
         robot_name = self.robot_name_map_inv[agent_name]
 
         if target_name in self.item_names:
-            sname = f"{target_name}_top" 
-        # elif target_name == "bin":
-        #     # find the empty slot
-        #     sname = self.find_emtpy_bin_slot(agent_name)
+            sname = f"{target_name}_top"  
         elif target_name in self.bin_slot_xposes.keys():
             sname = target_name
         else:
@@ -235,8 +193,7 @@ class PackGroceryTask(MujocoSimEnv):
         ee_link_ids = self.robots["Alice"].ee_link_body_ids + self.robots["Bob"].ee_link_body_ids
         ee_link_ids = [_id for _id in ee_link_ids if _id != "panda_hand"]
 
-        return ret
-
+        return ret 
 
     def get_graspable_objects(self):
         graspables = self.item_names.copy()
@@ -258,14 +215,7 @@ class PackGroceryTask(MujocoSimEnv):
         return self.robot_name_map_inv[agent_name]
     
     def get_agent_name(self, robot_name):
-        return self.robot_name_map[robot_name]
-    
-    def get_robot_config(self) -> Dict[str, Dict[str, Any]]:
-        return self.agent_configs
-    
-    def get_sim_robots(self) -> Dict[str, SimRobot]:
-        """NOTE this is indexed by agent name, not actual robot names"""
-        return self.robots
+        return self.robot_name_map[robot_name] 
 
     def get_robot_reach_range(self, robot_name: str) -> Dict[str, Tuple[float, float]]:
         if robot_name == "ur5e_robotiq" or robot_name == self.robot_name_map["ur5e_robotiq"]:
@@ -275,8 +225,7 @@ class PackGroceryTask(MujocoSimEnv):
         else:
             raise NotImplementedError
     
-    def sample_initial_scene(self):
-        # sample locations of the cabinet
+    def sample_initial_scene(self): 
         tosample_panels = []
         for n in range(self.physics.model.ngeom):
             geom = self.physics.model.geom(n)
@@ -315,7 +264,7 @@ class PackGroceryTask(MujocoSimEnv):
         self.physics.forward()
         self.physics.step(50)
     
-    def get_obs(self):
+    def get_obs(self) -> EnvState:
         contacts = self.get_contact()
         allow_objs = self.item_names + ["bin", "table"]
         contacts["ur5e_robotiq"] = [c for c in contacts["ur5e_robotiq"] if c in allow_objs]
@@ -340,7 +289,37 @@ class PackGroceryTask(MujocoSimEnv):
         for name in self.robot_names:
             assert getattr(obs, name) is not None, f"Robot {name} is not in the observation" 
         return obs
-     
+    
+    def get_reward_done(self, obs): 
+        all_packed = True
+        reward = 1
+        for food in self.item_names:
+            bin_coord = self.physics.data.body("bin").xpos[:2]
+            dist = np.linalg.norm(obs.objects[food].xpos[:2] - bin_coord)
+            if 'bin_inside' not in obs.objects[food].contacts and dist > self.align_threshold:
+                all_packed = False 
+                reward = 0
+                break 
+        return reward, all_packed
+
+    def get_contact(self):
+        contacts = super().get_contact()
+        # temp fix! 
+        robotiq_link_names = self.agent_configs["ur5e_robotiq"]['all_link_names'] + ['ur5e_robotiq']
+        contacts["ur5e_robotiq"] = [c for c in contacts["ur5e_robotiq"] if c not in robotiq_link_names] 
+
+        panda_link_names = self.agent_configs["panda"]['all_link_names'] + ["panda_right_finger", "panda_left_finger", "panda"]
+        contacts["panda"] = [c for c in contacts['panda'] if c not in panda_link_names] 
+        contacts["panda"].append("broom")
+
+        return contacts
+
+    def central_plan_prompt(self, chat_history: List[str] = []):
+        return PACK_PLAN_PROMPT 
+
+    def get_action_prompt(self) -> str:
+        return PACK_ACTION_SPACE
+
     def describe_object(self, obs, name):
         x,y,z = self.physics.data.site(f"{name}_top").xpos
         z += 0.05 # further avoid collision
@@ -368,8 +347,7 @@ class PackGroceryTask(MujocoSimEnv):
         agent_name = self.robot_name_map[robot_name]
         robot_desp = f"{agent_name}'s gripper: ({x:.2f}, {y:.2f}, {z:.2f}), holding {obj}" 
         return robot_desp
-
-
+    
     def describe_obs(self, obs: EnvState):
         full_desp =  "[Scene description]\n" 
         table_height = self.physics.data.body("table_top").xpos[2] + 0.15
@@ -385,6 +363,9 @@ class PackGroceryTask(MujocoSimEnv):
             full_desp += self.describe_robot_state(obs, robot_name) + "\n"
             
         return full_desp 
+    
+    def describe_task_context(self):
+        return PACK_TASK_CONTEXT
     
     def get_agent_prompt(self, obs, agent_name):        
         robot_name = self.get_robot_name(agent_name)
@@ -419,50 +400,18 @@ End your response by either: 1) output PROCEED, if the plans require further dis
 """
         return agent_prompt
     
-    def get_reward_done(self, obs): 
-        all_packed = True
-        reward = 1
-        for food in self.item_names:
-            bin_coord = self.physics.data.body("bin").xpos[:2]
-            dist = np.linalg.norm(obs.objects[food].xpos[:2] - bin_coord)
-            if 'bin_inside' not in obs.objects[food].contacts and dist > self.align_threshold:
-                all_packed = False 
-                reward = 0
-                break 
-        return reward, all_packed
-
-    def describe_robot_capability(self):
-        return ""
-
-    def describe_task_context(self):
-        context = PACK_TASK_CONTEXT
-        return context
-
-    def get_contact(self):
-        contacts = super().get_contact()
-        # temp fix! 
-        robotiq_link_names = self.agent_configs["ur5e_robotiq"]['all_link_names'] + ['ur5e_robotiq']
-        contacts["ur5e_robotiq"] = [c for c in contacts["ur5e_robotiq"] if c not in robotiq_link_names] 
-
-        panda_link_names = self.agent_configs["panda"]['all_link_names'] + ["panda_right_finger", "panda_left_finger", "panda"]
-        contacts["panda"] = [c for c in contacts['panda'] if c not in panda_link_names] 
-        contacts["panda"].append("broom")
-
-        return contacts
-
-    def chat_mode_prompt(self, chat_history: List[str] = []):
-        return PACK_CHAT_PROMPT
-
-    def central_plan_prompt(self, chat_history: List[str] = []):
-        return PACK_PLAN_PROMPT 
-
-
-    def get_action_prompt(self) -> str:
-        return PACK_ACTION_SPACE
+    def get_task_feedback(self, llm_plan, pose_dict): 
+        feedback = ""
+        for agent_name, action_str in llm_plan.action_strs.items():
+            if 'PICK' not in action_str and 'PLACE' not in action_str:
+                feedback += f"{agent_name}'s ACTION is invalid, can only PICK or PLACE"
+        return feedback
  
  
 
 if __name__ == "__main__":
+    import matplotlib.pyplot as plt
+    from PIL import Image 
     env = PackGroceryTask()
     obs = env.reset()
     print(env.describe_obs(obs))
@@ -470,22 +419,9 @@ if __name__ == "__main__":
     print(env.get_agent_prompt(obs, "Bob"))
     breakpoint()
     print(obs.ur5e_robotiq.ee_xquat)
-    print(env.get_system_prompt(mode="chat", obs=obs))
-    
     img=env.physics.render(camera_id="teaser", height=480, width=600)
     im = Image.fromarray(img)
     plt.imshow(img)
     plt.show()
     breakpoint()
-    # print(print(env.get_system_prompt(mode="chat", obs=obs)))
-    
-    # env.render_all_cameras(save_img=1)
-    # print('------------------')
-    # print(env.get_system_prompt(mode="central", obs=obs))
-    # qpos = env.physics.named.data.qpos
-    
-    # 
-    # plt.show()
-    # im.save('sorting_seed0.jpg')
-
 
