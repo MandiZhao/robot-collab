@@ -17,8 +17,8 @@ from mujoco import FatalError as mujocoFatalError
 import dm_control 
 from dm_control import mujoco as dm_mujoco
 from dm_control.utils.transformations import mat_to_quat, quat_to_euler
-from .env_utils import AllowArbitraryTypes
-from .constants import UR5E_ROBOTIQ_CONSTANTS, UR5E_SUCTION_CONSTANTS, PANDA_CONSTANTS
+from .env_utils import AllowArbitraryTypes, VisionSensorOutput, PointCloud
+from .constants import UR5E_ROBOTIQ_CONSTANTS, UR5E_SUCTION_CONSTANTS, PANDA_CONSTANTS, SCENE_BOUNDS
 
 
 @dataclasses.dataclass(frozen=False)
@@ -103,6 +103,7 @@ class EnvState:
     panda:        Union[RobotState, None] = None
     ur5e_robotiq: Union[RobotState, None] = None
     humanoid:     Union[RobotState, None] = None
+    scene:        Optional[PointCloud] = None  
 
     def get_object(self, name: str) -> ObjectState:
         assert name in self.objects, f"Object {name} not found in env state"
@@ -421,6 +422,63 @@ class MujocoSimEnv:
             tosave.save(output_name)
         return imgs
 
+    def render(
+        self, max_retries: int = 100) -> Dict[str, VisionSensorOutput]:
+        outputs = {}
+        for cam_name in self.render_cameras:
+            cam = self.physics.model.camera(cam_name)
+            cam_data = self.physics.data.camera(cam_name)
+            cam_pos = cam_data.xpos.reshape(3)
+            cam_rotmat = cam_data.xmat.reshape(3, 3)
+            for i in range(max_retries): 
+                try:
+                    # NOTE: rgb render much more expensive than others
+                    # If optimizing, look into disable rgb rendering for
+                    # passes which are not needed
+                    rgb = self.physics.render(
+                        height=self.image_hw[0],
+                        width=self.image_hw[1],
+                        depth=False,
+                        camera_id=cam.id,
+                    ) 
+                    depth = self.physics.render(
+                        height=self.image_hw[0],
+                        width=self.image_hw[1],
+                        depth=True,
+                        camera_id=cam.id,
+                    )
+                    segmentation = self.physics.render(
+                        height=self.image_hw[0],
+                        width=self.image_hw[1],
+                        depth=False,
+                        segmentation=True,
+                        camera_id=cam_name,
+                    ) 
+                    
+                    outputs[cam_name] = VisionSensorOutput(
+                        rgb=rgb,
+                        depth=depth,                     
+                        pos=(cam_pos[0], cam_pos[1], cam_pos[2]),
+                        rot_mat=cam_rotmat,
+                        fov=float(cam.fovy[0]),
+                    )
+                    break   
+
+                except mujocoFatalError as e:
+                    if i == max_retries - 1:
+                        raise e
+                    time.sleep(5)
+        return outputs
+    
+    def get_point_cloud(self):
+        sensor_outputs = self.render()
+        point_clouds = [
+            sensor_output.point_cloud.filter_bounds(bounds=SCENE_BOUNDS) 
+                for sensor_output in sensor_outputs.values()
+        ]
+        point_cloud = sum(point_clouds[1:], start=point_clouds[0]) 
+        return point_cloud
+
     def get_contact(self) -> Dict:
         """ iterates through all contacts and return dict(each_root_body: set(other_body_names))""" 
         model = self.model
@@ -562,7 +620,8 @@ class MujocoSimEnv:
         )
         kwargs.update(agent_states)
         if self.render_point_cloud:
-            raise NotImplementedError # TODO: the point cloud implementation isn't fully working
+            point_cloud = self.get_point_cloud()
+            kwargs['scene'] = point_cloud
         obs = EnvState(**kwargs)
         return obs
 
@@ -674,10 +733,7 @@ class MujocoSimEnv:
     def get_body_pos_quat(self, body_name):
         body_pos = self.data.body(body_name).pos
         body_quat = self.data.body(body_name).quat
-        return body_pos, body_quat
-
-    def get_point_cloud(self):
-        raise NotImplementedError # TODO
+        return body_pos, body_quat 
 
     # NOTE: everything below is task specific, overwrite in each task script
     def sample_initial_scene(self):

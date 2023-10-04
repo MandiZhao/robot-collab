@@ -523,6 +523,10 @@ End your response by either: 1) output PROCEED, if the plans require further dis
 if __name__ == "__main__":
     env = CabinetTask()
     env.seed(2)
+    env.render_point_cloud = True
+    pcd = env.get_point_cloud()
+    pcd.show()
+    breakpoint()
     obs = env.reset()
     print(env.describe_obs(obs))
     print(env.get_agent_prompt(obs, "Alice"))

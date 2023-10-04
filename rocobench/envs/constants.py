@@ -364,7 +364,6 @@ BIN_GRID_POS = [
     dict(pos=[-0.38, 0.32, 0.3], size=[0.1, 0.05, 0.01]),
 ]
 BIN_GRID_POS=BIN_GRID_POS[0:1]+BIN_GRID_POS[3:4]
-# SCENE_BOUNDS=((-1.5, -0.7, 0.02), (1.5, 2.5, 1.5))
 SCENE_BOUNDS=((-1.4, -0.2, -0.1), (1.7, 1.2, 1.1))
 
 HUMAN_KEYPOINT_SITE_NAMES = [name+"_keyp" for \

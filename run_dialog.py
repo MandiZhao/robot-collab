@@ -12,7 +12,7 @@ from typing import List, Tuple, Dict, Union, Optional, Any
 from collections import defaultdict
 import matplotlib.pyplot as plt
 
-from rocobench.envs import SortOneBlockTask, CabinetTask, MoveRopeTask, SweepTask, MakeSandwichTask, PackGroceryTask, MujocoSimEnv, SimRobot #, visualize_voxel_scene
+from rocobench.envs import SortOneBlockTask, CabinetTask, MoveRopeTask, SweepTask, MakeSandwichTask, PackGroceryTask, MujocoSimEnv, SimRobot, visualize_voxel_scene
 from rocobench import PlannedPathPolicy, LLMPathPlan, MultiArmRRT
 from prompting import LLMResponseParser, FeedbackManager, DialogPrompter, SingleThreadPrompter, save_episode_html
 
@@ -152,22 +152,22 @@ class LLMRunner:
 
 
     def display_plan(self, plan: LLMPathPlan, save_name = "vis_plan", save_dir = None):
-        """ Display the plan in the viewer """
-        raise NotImplementedError
+        """ Display the plan in the open3d viewer """ 
         env = deepcopy(self.env)
         env.physics.data.qpos[:] = self.env.physics.data.qpos[:].copy()
         env.physics.forward()
         env.render_point_cloud = True
         obs = env.get_obs()
         path_ls = plan.path_3d_list
-        save_path = os.path.join(save_dir, f"{save_name}.jpg")
+        if save_dir is not None:
+            save_path = os.path.join(save_dir, f"{save_name}.jpg")
         visualize_voxel_scene(
             obs.scene,
             path_pts=path_ls,
             save_img=(save_dir is not None),
             img_path=save_path
             )
-        self.env.render_point_cloud = False
+        
 
     def one_run(self, run_id: int = 0, start_step: int = 0, skip_reset = False, prev_llm_plans = [], prev_response = None, prev_actions = None):
         """ uses planner """
