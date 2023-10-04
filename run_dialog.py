@@ -250,7 +250,7 @@ class LLMRunner:
                     for sim_action in prev_actions:
                         # env.physics.model.eq_active[52:] = 0
                         # env.physics.forward() # DEBUG
-                        obs, reward, done, info = env.step(sim_action, verbose=1)
+                        obs, reward, done, info = env.step(sim_action, verbose=False)
                         num_sim_steps += 1
                 else:
                     # breakpoint()
@@ -270,7 +270,7 @@ class LLMRunner:
 
                         while not policy.plan_exhausted:
                             sim_action = policy.act(obs, env.physics)
-                            obs, reward, done, info = env.step(sim_action, verbose=1)
+                            obs, reward, done, info = env.step(sim_action, verbose=False)
                             num_sim_steps += 1
 
                 if num_sim_steps > 0:

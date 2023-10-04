@@ -171,7 +171,6 @@ class SimAction:
             setattr(self, f"{prefix}_idxs", np.array(_idxs, dtype=np.int32))
             setattr(self, f"{prefix}_target", np.array(_vals, dtype=np.float32))
  
-    
     def qpos_error(self, qpos):
         """ compute qpos error """
         if len(self.qpos_idxs) == 0:
@@ -641,9 +640,11 @@ class MujocoSimEnv:
                 self.save_intermediate_state() # obs_T+t
 
             if step % self.error_freq == 0:
-                error_dict = action.compute_error(
+                error = action.compute_error(
                     qpos=self.data.qpos, xpos=self.data.xpos, xquat=self.data.xquat) 
-                if error_dict['error'] < self.error_threshold and step > self.render_freq * 2:
+                if verbose:
+                    print(f"Sim Steped {step} steps, Error: {error}")
+                if error < self.error_threshold and step > self.render_freq * 2:
                     break  
         self.render_all_cameras()
         
@@ -651,8 +652,7 @@ class MujocoSimEnv:
         self.physics.forward()
         
         next_obs = self.get_obs() # obs_T+1
-        if verbose:
-            print(f"Sim Steped {step} steps, Error: {error_dict['error']}")
+        
         reward, done = self.get_reward_done(next_obs)
         self.timestep += 1
         info = dict() 
