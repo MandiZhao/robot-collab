@@ -22,9 +22,9 @@
             <joint axis="0 0 1" name="leftdoorhinge" range="-2.6 0" damping="100"/>
             <inertial mass=".6" pos="0.03 -0.02 0" diaginertia="0.01 0.01 0.01"/> 
             <geom name="leftdoor" class="hinge_collision" pos="0.17 -0.02 0" size="0.16 0.015 0.3" type="box" mass="3"/> 
-            <geom name="lefthandle" class="hinge_collision" material="stove-black" pos="0.23 -0.08 0" size="0.015 0.25" type="cylinder" mass=".2"/>
-            <geom name="lefthandle_top" class="hinge_collision" pos="0.23 -0.061 0.08" material="stove-black"  euler="1.57 0 0" size="0.013 0.02 0.02" type="cylinder" mass=".02"/>
-            <geom name="lefthandle_bottom" class="hinge_collision" pos="0.23 -0.061 -0.08" material="stove-black" euler="1.57 0 0" size="0.013 0.02 0.02" type="cylinder" mass=".02"/>
+            <geom name="lefthandle" class="hinge_collision" material="quiet-black" pos="0.23 -0.08 0" size="0.015 0.25" type="cylinder" mass=".2"/>
+            <geom name="lefthandle_top" class="hinge_collision" pos="0.23 -0.061 0.08" material="quiet-black"  euler="1.57 0 0" size="0.013 0.02 0.02" type="cylinder" mass=".02"/>
+            <geom name="lefthandle_bottom" class="hinge_collision" pos="0.23 -0.061 -0.08" material="quiet-black" euler="1.57 0 0" size="0.013 0.02 0.02" type="cylinder" mass=".02"/>
             <site name="cabinet_ldoor" type="sphere" size="0.02" pos="0.23 -0.13 0" group="3" rgba="1 0 0 1"  euler="1.57 0 1.57"/>
             <body name="left_door_handle" pos="0.23 -0.09 0" euler="1.57 0 1.57"/>
             <site name="left_door_handle" pos="0.23 -0.09 0" euler="1.57 0 1.57" type="sphere" size="0.02" group="3"/>
@@ -34,9 +34,9 @@
             <joint axis="0 0 1" name="rightdoorhinge" range="0 2.6" damping="100"/> 
             <inertial mass=".6" pos="-0.03 -0.02 0" diaginertia="0.01 0.01 0.01"/>
             <geom name="rightdoor" class="hinge_collision" pos="-0.17 -0.02 0" size="0.16 0.015 0.3" type="box" mass="3"/>
-            <geom name="righthandle" class="hinge_collision" material="stove-black" pos="-0.23 -0.08 0" size="0.015 0.25" type="cylinder" mass=".2"/>
-            <geom name="righthandle_top" class="hinge_collision" pos="-0.23 -0.061 0.08" material="stove-black" euler="1.57 0 0" size="0.013 0.02 0.02" type="cylinder" mass=".02"/>
-            <geom name="righthandle_bottom" class="hinge_collision" pos="-0.23 -0.061 -0.08" material="stove-black" euler="1.57 0 0" size="0.013 0.02 0.02" type="cylinder" mass=".02"/>
+            <geom name="righthandle" class="hinge_collision" material="quiet-black" pos="-0.23 -0.08 0" size="0.015 0.25" type="cylinder" mass=".2"/>
+            <geom name="righthandle_top" class="hinge_collision" pos="-0.23 -0.061 0.08" material="quiet-black" euler="1.57 0 0" size="0.013 0.02 0.02" type="cylinder" mass=".02"/>
+            <geom name="righthandle_bottom" class="hinge_collision" pos="-0.23 -0.061 -0.08" material="quiet-black" euler="1.57 0 0" size="0.013 0.02 0.02" type="cylinder" mass=".02"/>
             <site name="cabinet_rdoor" type="sphere"  pos="-0.23 -0.13 0" size=".02" group="3" rgba="0 1 0 1" euler="1.57 0 1.57"/>
             <body name="right_door_handle" pos="-0.23 -0.1 0" euler="1.57 0 1.57"/>
             <site name="right_door_handle" pos="-0.23 -0.1 0" euler="1.57 0 1.57" group="3"/>

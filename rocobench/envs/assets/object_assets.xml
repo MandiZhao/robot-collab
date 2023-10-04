@@ -89,6 +89,7 @@
     <texture name="tex-bacon" type="2d" file="objects/textures/bacon.png"/> 
     <material name="bacon" reflectance="0" texrepeat="0.4 0.4" texture="tex-bacon" texuniform="false"/>
 
+    <material name="quiet-black" rgba=".15 .15 .15 1" reflectance=".2" shininess=".2" />
 
     <!-- tomato -->
     <texture name="tex-tomato" type="2d" file="objects/textures/tomato.png"/> 
